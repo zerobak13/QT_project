@@ -79,7 +79,7 @@ GameWindow::GameWindow(int boardSize, int obstacleCount, QString firstPlayer, QW
     mainLayout->addWidget(boardView);
     mainLayout->addLayout(rightLayout);
 
-    setLayout(mainLayout);  // ✅ 여기 딱 한 번만 호출!
+    setLayout(mainLayout);  
 
     updateStatus();  // 상태 표시 갱신
 

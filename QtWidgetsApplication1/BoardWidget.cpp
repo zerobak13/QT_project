@@ -1,7 +1,7 @@
 ﻿#include "BoardWidget.h"
 #include <QPainter>
 #include <QMouseEvent>
-#include <QRandomGenerator>
+
 
 
 BoardWidget::BoardWidget(int size, QVector<QVector<Stone>>& boardRef, QVector<QPoint>& validRef, QWidget* parent)
@@ -30,17 +30,30 @@ void BoardWidget::paintEvent(QPaintEvent*)
         for (int x = 0; x < boardSize; ++x) {
             if (board[y][x] == Stone::None) continue;
 
-            QRect cell(x * cellSize + 5, y * cellSize + 5, cellSize - 10, cellSize - 10);
-            if (board[y][x] == Stone::Black) painter.setBrush(Qt::black);
-            else if (board[y][x] == Stone::White) painter.setBrush(Qt::white);
-            else if (board[y][x] == Stone::Block) painter.setBrush(Qt::darkBlue);
-            else if (board[y][x] == Stone::Block)
+            if (board[y][x] == Stone::Block) {
+                // ✅ 셀 전체를 채우는 사각형
+                QRect fullCell(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
                 painter.setBrush(Qt::darkBlue);
+                painter.setPen(Qt::black);
+                painter.drawRect(fullCell);
+            }
+            else {
+                // ✅ 일반 돌용 작게 그리는 원
+                QRect cell(x * cellSize + 5, y * cellSize + 5, cellSize - 10, cellSize - 10);
+                if (board[y][x] == Stone::Black) {
+                    painter.setBrush(Qt::black);
+                    painter.setPen(Qt::black);
+                }
+                else if (board[y][x] == Stone::White) {
+                    painter.setBrush(Qt::white);
+                    painter.setPen(Qt::black);
+                }
 
-            painter.setPen(Qt::black);
-            painter.drawEllipse(cell);
+                painter.drawEllipse(cell);
+            }
         }
     }
+
 
     // 착수 위치 표시 (밝은 녹색 사각형)
     painter.setBrush(QColor(144, 238, 144));
