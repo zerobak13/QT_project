@@ -30,6 +30,7 @@ private:
     QLabel* turnLabel;
     QLabel* blackCountLabel;
     QLabel* whiteCountLabel;
+    QLabel* turnIconLabel;
 
 
     void flipStones(int x, int y, Stone turn);

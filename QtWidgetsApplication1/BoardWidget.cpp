@@ -1,6 +1,7 @@
 ﻿#include "BoardWidget.h"
 #include <QPainter>
 #include <QMouseEvent>
+#include <QRandomGenerator>
 
 
 BoardWidget::BoardWidget(int size, QVector<QVector<Stone>>& boardRef, QVector<QPoint>& validRef, QWidget* parent)
@@ -33,6 +34,8 @@ void BoardWidget::paintEvent(QPaintEvent*)
             if (board[y][x] == Stone::Black) painter.setBrush(Qt::black);
             else if (board[y][x] == Stone::White) painter.setBrush(Qt::white);
             else if (board[y][x] == Stone::Block) painter.setBrush(Qt::darkBlue);
+            else if (board[y][x] == Stone::Block)
+                painter.setBrush(Qt::darkBlue);
 
             painter.setPen(Qt::black);
             painter.drawEllipse(cell);

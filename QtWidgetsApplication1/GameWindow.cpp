@@ -2,6 +2,7 @@
 #include "BoardWidget.h"
 
 #include "Stone.h"
+#include <QRandomGenerator>
 
 #include <QPushButton>
 #include <QPainter>
@@ -19,12 +20,26 @@ GameWindow::GameWindow(int boardSize, int obstacleCount, QString firstPlayer, QW
     // 보드 상태 초기화
     board = QVector<QVector<Stone>>(boardSize, QVector<Stone>(boardSize, Stone::None));
 
+
     // 중앙 돌 배치
     int mid = boardSize / 2;
     board[mid - 1][mid - 1] = Stone::White;
     board[mid - 1][mid] = Stone::Black;
     board[mid][mid - 1] = Stone::Black;
     board[mid][mid] = Stone::White;
+
+    // 장애물 배치 (임의의 빈칸에 obstacleCount만큼)
+    int placed = 0;
+    while (placed < obstacleCount) {
+        int x = QRandomGenerator::global()->bounded(boardSize);
+        int y = QRandomGenerator::global()->bounded(boardSize);
+
+        if (board[y][x] == Stone::None && !(x == mid || x == mid - 1) && !(y == mid || y == mid - 1)) {
+            board[y][x] = Stone::Block;
+            placed++;
+        }
+    }
+
 
     currentTurn = Stone::Black;
     updateValidMoves(currentTurn);
@@ -37,9 +52,22 @@ GameWindow::GameWindow(int boardSize, int obstacleCount, QString firstPlayer, QW
     turnLabel = new QLabel("턴: 흑 턴");
     blackCountLabel = new QLabel("흑돌: 2");
     whiteCountLabel = new QLabel("백돌: 2");
+    //글씨색
+    turnLabel->setStyleSheet("color: black;");
+    blackCountLabel->setStyleSheet("color: black;");
+    whiteCountLabel->setStyleSheet("color: black;");
+
     QPushButton* backButton = new QPushButton("메인화면");
+    backButton->setStyleSheet("color: black;");
+
+    //턴 돌색 표시
+    turnIconLabel = new QLabel();
+    turnIconLabel->setFixedSize(40, 40);
+    turnIconLabel->setStyleSheet("background-color: black; border: 1px solid black;");
+
 
     QVBoxLayout* rightLayout = new QVBoxLayout();
+    rightLayout->addWidget(turnIconLabel);  // turnLabel 위에 추가
     rightLayout->addWidget(turnLabel);
     rightLayout->addWidget(blackCountLabel);
     rightLayout->addWidget(whiteCountLabel);
@@ -125,7 +153,7 @@ void GameWindow::flipStones(int x, int y, Stone turn)
         QVector<QPoint> path;
 
         while (nx >= 0 && nx < boardSize && ny >= 0 && ny < boardSize) {
-            if (board[ny][nx] == Stone::None)
+            if (board[ny][nx] == Stone::None || board[ny][nx] == Stone::Block)
                 break;
 
             if (board[ny][nx] != turn) {
@@ -147,6 +175,11 @@ void GameWindow::updateStatus()
 {
     int blackCount = 0;
     int whiteCount = 0;
+
+    if (currentTurn == Stone::Black)
+        turnIconLabel->setStyleSheet("background-color: black; border: 1px solid black;");
+    else
+        turnIconLabel->setStyleSheet("background-color: white; border: 1px solid black;");
 
     for (const auto& row : board) {
         for (Stone s : row) {
