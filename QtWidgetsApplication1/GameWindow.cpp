@@ -39,10 +39,13 @@ GameWindow::GameWindow(int boardSize, int obstacleCount, QString firstPlayer, QW
             placed++;
         }
     }
+    // QString → Stone 변환
+    if (firstPlayer == "흑")
+        currentTurn = Stone::Black;
+    else
+        currentTurn = Stone::White;
 
-
-    currentTurn = Stone::Black;
-    updateValidMoves(currentTurn);
+ 
 
     // ===== BoardWidget 생성 =====
     BoardWidget* boardView = new BoardWidget(boardSize, board, validMoves);
@@ -61,9 +64,13 @@ GameWindow::GameWindow(int boardSize, int obstacleCount, QString firstPlayer, QW
     backButton->setStyleSheet("color: black;");
 
     //턴 돌색 표시
+     // 턴 돌색 아이콘도 선공에 따라 설정
     turnIconLabel = new QLabel();
     turnIconLabel->setFixedSize(40, 40);
-    turnIconLabel->setStyleSheet("background-color: black; border: 1px solid black;");
+
+    QString iconColor = (currentTurn == Stone::Black) ? "black" : "white";
+    turnIconLabel->setStyleSheet("background-color: " + iconColor + "; border: 1px solid black;");
+   
 
 
     QVBoxLayout* rightLayout = new QVBoxLayout();
@@ -81,7 +88,9 @@ GameWindow::GameWindow(int boardSize, int obstacleCount, QString firstPlayer, QW
 
     setLayout(mainLayout);  
 
-    updateStatus();  // 상태 표시 갱신
+    // 마지막에 턴 표시, 착수 위치 갱신
+    updateValidMoves(currentTurn);
+    updateStatus();
 
     this->setStyleSheet("background-color: #f0f0f0;");
 

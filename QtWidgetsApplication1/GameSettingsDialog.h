@@ -18,7 +18,7 @@ public:
     int getBoardSize() const;
     int getObstacleCount() const;
     QString getFirstPlayer() const;
-
+    
 private:
     QComboBox* boardSizeCombo;
     QSpinBox* obstacleSpin;
