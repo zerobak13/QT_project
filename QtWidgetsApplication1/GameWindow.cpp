@@ -88,6 +88,9 @@ GameWindow::GameWindow(int boardSize, int obstacleCount, QString firstPlayer, QW
 
     setLayout(mainLayout);  
 
+    connect(backButton, &QPushButton::clicked, this, [=]() {
+        emit requestReturnToMain(this);  // GameWindow를 닫고 메인으로
+        });
     // 마지막에 턴 표시, 착수 위치 갱신
     updateValidMoves(currentTurn);
     updateStatus();

@@ -4,6 +4,8 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QMessageBox>
+
 
 QtWidgetsApplication1::QtWidgetsApplication1(QWidget* parent)
     : QMainWindow(parent)
@@ -26,14 +28,34 @@ QtWidgetsApplication1::QtWidgetsApplication1(QWidget* parent)
             int obs = dlg.getObstacleCount();
             QString player = dlg.getFirstPlayer();
 
-            GameWindow* game = new GameWindow(size, obs, player);
-            game->show();
-            this->hide();  // 메인창 숨기기 (원하면 유지해도 됨)
+            if (currentGame) {
+                delete currentGame;  // 이전 게임 있으면 삭제
+            }
+            currentGame = new GameWindow(size, obs, player);
+
+           
+            connect(currentGame, &GameWindow::requestReturnToMain, this, [=]() {
+                currentGame->hide();
+                this->show();
+                });
+
+            currentGame->show();
+            this->hide();  // 메인 화면 숨김
         }
         });
 
     QPushButton* continueButton = new QPushButton("이어하기",this);
     layout->addWidget(continueButton);
+    connect(continueButton, &QPushButton::clicked, this, [=]() {
+        if (currentGame) {
+            currentGame->show();
+            this->hide();
+        }
+        else {
+            QMessageBox::information(this, "안내", "이어할 게임이 없습니다.");
+        }
+        });
+
 
     QPushButton* replayButton = new QPushButton("리플레이", this);
     layout->addWidget(replayButton);

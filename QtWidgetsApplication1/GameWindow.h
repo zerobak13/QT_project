@@ -20,7 +20,9 @@ public:
 protected:
     
     void updateValidMoves(Stone currentTurn);  
-   
+signals:
+    void requestReturnToMain(GameWindow* sender);
+
 
 private:
     int boardSize;
