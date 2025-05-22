@@ -13,7 +13,7 @@ GameSettingsDialog::GameSettingsDialog(QWidget* parent)
     obstacleSpin->setRange(0, 16);
 
     firstPlayerCombo = new QComboBox(this);
-    firstPlayerCombo->addItems({ "흑", "백"});
+    firstPlayerCombo->addItems({ "흑", "백", "무작위" });
 
     QPushButton* okButton = new QPushButton("확인", this);
     QPushButton* cancelButton = new QPushButton("취소", this);

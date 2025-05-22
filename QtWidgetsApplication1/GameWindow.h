@@ -37,6 +37,10 @@ private:
 
     void flipStones(int x, int y, Stone turn);
     void updateStatus();
+    //게임종료
+    bool isGameOver();
+    void getValidMoves(Stone turn, QVector<QPoint>& moves);
+    void checkGameEndAndNotify();
 
     QVector<QVector<Stone>> board;
     QVector<QPoint> validMoves;

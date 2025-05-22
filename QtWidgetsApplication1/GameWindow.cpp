@@ -3,7 +3,7 @@
 
 #include "Stone.h"
 #include <QRandomGenerator>
-
+#include <QMessageBox>
 #include <QPushButton>
 #include <QPainter>
 #include <QMouseEvent>
@@ -30,15 +30,37 @@ GameWindow::GameWindow(int boardSize, int obstacleCount, QString firstPlayer, QW
 
     // 장애물 배치 (임의의 빈칸에 obstacleCount만큼)
     int placed = 0;
-    while (placed < obstacleCount) {
-        int x = QRandomGenerator::global()->bounded(boardSize);
+    while (placed < obstacleCount / 2) {
+        int x = QRandomGenerator::global()->bounded(boardSize / 2);  // 왼쪽 절반만 뽑음
         int y = QRandomGenerator::global()->bounded(boardSize);
 
-        if (board[y][x] == Stone::None && !(x == mid || x == mid - 1) && !(y == mid || y == mid - 1)) {
+        int mirrorX = boardSize - 1 - x;
+
+        // 중앙 4칸은 제외
+        if ((x == mid || x == mid - 1) && (y == mid || y == mid - 1)) continue;
+        if ((mirrorX == mid || mirrorX == mid - 1) && (y == mid || y == mid - 1)) continue;
+
+        if (board[y][x] == Stone::None && board[y][mirrorX] == Stone::None) {
             board[y][x] = Stone::Block;
+            board[y][mirrorX] = Stone::Block;
             placed++;
         }
     }
+
+    // obstacleCount가 홀수인 경우 중앙 아래쪽에 하나만 더
+    if (obstacleCount % 2 == 1) {
+        for (int attempt = 0; attempt < 100; ++attempt) {
+            int x = QRandomGenerator::global()->bounded(boardSize);
+            int y = QRandomGenerator::global()->bounded(boardSize);
+
+            if ((x == mid || x == mid - 1) && (y == mid || y == mid - 1)) continue;
+            if (board[y][x] == Stone::None) {
+                board[y][x] = Stone::Block;
+                break;
+            }
+        }
+    }
+
     // QString → Stone 변환
     if (firstPlayer == "흑")
         currentTurn = Stone::Black;
@@ -215,7 +237,122 @@ void GameWindow::handleCellClick(int x, int y)
     board[y][x] = currentTurn;
     flipStones(x, y, currentTurn);
 
+    // 턴 변경
     currentTurn = (currentTurn == Stone::Black) ? Stone::White : Stone::Black;
+
+    // 착수 위치 갱신
     updateValidMoves(currentTurn);
     updateStatus();
+
+    // ✅ 둘 곳이 없으면 패스 or 종료 판단
+    if (validMoves.isEmpty()) {
+        // 상대방도 못 두면 → 게임 종료
+        QVector<QPoint> otherMoves;
+        Stone other = (currentTurn == Stone::Black) ? Stone::White : Stone::Black;
+        getValidMoves(other, otherMoves);
+
+        if (otherMoves.isEmpty()) {
+            // ✅ 양쪽 모두 못 둠 → 바로 게임 종료
+            checkGameEndAndNotify();
+            return;
+        }
+
+        // ✅ 상대방은 둘 수 있음 → 패스 처리
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle("패스");
+        msgBox.setText("착수 가능한 자리가 없어 턴을 넘깁니다.");
+        msgBox.setStyleSheet("QLabel { color: black; }");
+        msgBox.exec();
+
+        // 턴 넘기기
+        currentTurn = other;
+        updateValidMoves(currentTurn);
+        updateStatus();
+
+        // 다시 종료 조건 확인
+        checkGameEndAndNotify();
+        return;
+    }
+
+    // ✅ 게임 종료 조건 확인
+    checkGameEndAndNotify();
+}
+
+
+
+bool GameWindow::isGameOver()
+{
+    QVector<QPoint> blackMoves, whiteMoves;
+    getValidMoves(Stone::Black, blackMoves);
+    getValidMoves(Stone::White, whiteMoves);
+
+    return blackMoves.isEmpty() && whiteMoves.isEmpty();
+}
+
+
+
+
+void GameWindow::getValidMoves(Stone turn, QVector<QPoint>& moves)
+{
+    moves.clear();
+    int dx[8] = { -1,-1,-1,0,1,1,1,0 };
+    int dy[8] = { -1,0,1,1,1,0,-1,-1 };
+
+    for (int y = 0; y < boardSize; ++y) {
+        for (int x = 0; x < boardSize; ++x) {
+            if (board[y][x] != Stone::None) continue;
+
+            bool isValid = false;
+            for (int d = 0; d < 8; ++d) {
+                int nx = x + dx[d];
+                int ny = y + dy[d];
+                bool foundOpponent = false;
+
+                while (nx >= 0 && nx < boardSize && ny >= 0 && ny < boardSize) {
+                    if (board[ny][nx] == Stone::None || board[ny][nx] == Stone::Block)
+                        break;
+
+                    if (board[ny][nx] != turn) {
+                        foundOpponent = true;
+                        nx += dx[d];
+                        ny += dy[d];
+                    }
+                    else {
+                        if (foundOpponent)
+                            isValid = true;
+                        break;
+                    }
+                }
+
+                if (isValid) break;
+            }
+
+            if (isValid)
+                moves.append(QPoint(x, y));
+        }
+    }
+}
+
+
+void GameWindow::checkGameEndAndNotify()
+{
+    if (!isGameOver())
+        return;
+
+    int black = 0, white = 0;
+    for (const auto& row : board) {
+        for (Stone s : row) {
+            if (s == Stone::Black) ++black;
+            else if (s == Stone::White) ++white;
+        }
+    }
+
+    QString result;
+    if (black > white) result = "흑 승!";
+    else if (white > black) result = "백 승!";
+    else result = "무승부!";
+
+    QMessageBox::information(this, "게임 종료", result);
+
+    emit requestReturnToMain(this);  // 메인으로 복귀
 }
