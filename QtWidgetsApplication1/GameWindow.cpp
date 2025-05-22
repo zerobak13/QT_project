@@ -61,11 +61,19 @@ GameWindow::GameWindow(int boardSize, int obstacleCount, QString firstPlayer, QW
         }
     }
 
-    // QString → Stone 변환
-    if (firstPlayer == "흑")
+
+// QString → Stone 변환
+    if (firstPlayer == "흑") {
         currentTurn = Stone::Black;
-    else
+    }
+    else if (firstPlayer == "백") {
         currentTurn = Stone::White;
+    }
+    else {  // "무작위"인 경우
+        int r = QRandomGenerator::global()->bounded(2);  // 0 또는 1
+        currentTurn = (r == 0) ? Stone::Black : Stone::White;
+    }
+
 
  
 
@@ -261,7 +269,12 @@ void GameWindow::handleCellClick(int x, int y)
         QMessageBox msgBox(this);
         msgBox.setWindowTitle("패스");
         msgBox.setText("착수 가능한 자리가 없어 턴을 넘깁니다.");
-        msgBox.setStyleSheet("QLabel { color: black; }");
+        
+        msgBox.setStyleSheet(
+            "QLabel { color: black; } "
+            "QPushButton { color: black; } "
+            "QMessageBox { background-color: white; }"
+        );
         msgBox.exec();
 
         // 턴 넘기기
@@ -352,7 +365,19 @@ void GameWindow::checkGameEndAndNotify()
     else if (white > black) result = "백 승!";
     else result = "무승부!";
 
-    QMessageBox::information(this, "게임 종료", result);
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle("게임 종료");
+    msgBox.setText(result);
+
+    // ✅ 글자와 버튼 모두 검정색으로
+    msgBox.setStyleSheet(
+        "QLabel { color: black; } "
+        "QPushButton { color: black; } "
+        "QMessageBox { background-color: white; }"
+    );
+
+    msgBox.exec();
+
 
     emit requestReturnToMain(this);  // 메인으로 복귀
 }

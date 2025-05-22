@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
+#include <QApplication>
 
 
 QtWidgetsApplication1::QtWidgetsApplication1(QWidget* parent)
@@ -62,6 +63,9 @@ QtWidgetsApplication1::QtWidgetsApplication1(QWidget* parent)
 
     QPushButton* exitButton = new QPushButton("게임 종료", this);
     layout->addWidget(exitButton);
+    connect(exitButton, &QPushButton::clicked, this, []() {
+        QApplication::quit();
+        });
 
     centralWidget->setLayout(layout);
 }
