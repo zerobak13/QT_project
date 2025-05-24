@@ -230,7 +230,9 @@ void GameWindow::updateStatus()
         }
     }
 
-    QString turnStr = (currentTurn == Stone::Black) ? "턴: 흑 턴" : "턴: 백 턴";
+    QString turnStr = QString("턴 %1: ").arg(turnCount);
+    turnStr += (currentTurn == Stone::Black) ? "흑 턴" : "백 턴";
+
     turnLabel->setText(turnStr);
     blackCountLabel->setText("흑돌: " + QString::number(blackCount));
     whiteCountLabel->setText("백돌: " + QString::number(whiteCount));
@@ -247,7 +249,7 @@ void GameWindow::handleCellClick(int x, int y)
 
     // 턴 변경
     currentTurn = (currentTurn == Stone::Black) ? Stone::White : Stone::Black;
-
+    turnCount++;
     // 착수 위치 갱신
     updateValidMoves(currentTurn);
     updateStatus();
@@ -289,6 +291,9 @@ void GameWindow::handleCellClick(int x, int y)
 
     // ✅ 게임 종료 조건 확인
     checkGameEndAndNotify();
+    replayBoards.append(board);
+    replayMoves.append(QPoint(x, y));
+    replayTurns.append(currentTurn == Stone::Black ? Stone::White : Stone::Black);
 }
 
 
@@ -368,15 +373,36 @@ void GameWindow::checkGameEndAndNotify()
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("게임 종료");
     msgBox.setText(result);
+    msgBox.exec();
 
-    // ✅ 글자와 버튼 모두 검정색으로
+
+    QMessageBox::StandardButton reply =
+        QMessageBox::question(this, "리플레이 저장", "리플레이를 저장하시겠습니까?",
+            QMessageBox::Yes | QMessageBox::No);
+
+    if (reply == QMessageBox::Yes) {
+        // 나중에 ReplayWindow에서 쓸 수 있도록 상위로 전달할 예정
+        // 예: emit replaySaved(replayBoards, replayMoves, replayTurns);
+        // 지금은 일단 저장했다는 사실만 알려주기
+        qDebug() << "✅ 리플레이 저장 선택됨";
+    }
+    else {
+        // 저장 안 함
+        replayBoards.clear();
+        replayMoves.clear();
+        replayTurns.clear();
+        qDebug() << "⛔ 리플레이 저장하지 않음";
+    }
+
+
+    //  글자와 버튼 모두 검정색으로
     msgBox.setStyleSheet(
         "QLabel { color: black; } "
         "QPushButton { color: black; } "
         "QMessageBox { background-color: white; }"
     );
 
-    msgBox.exec();
+   
 
 
     emit requestReturnToMain(this);  // 메인으로 복귀

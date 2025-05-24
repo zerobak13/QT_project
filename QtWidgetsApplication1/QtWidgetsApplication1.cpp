@@ -36,6 +36,9 @@ QtWidgetsApplication1::QtWidgetsApplication1(QWidget* parent)
 
            
             connect(currentGame, &GameWindow::requestReturnToMain, this, [=]() {
+                savedReplayBoards = currentGame->getReplayBoards();
+                savedReplayMoves = currentGame->getReplayMoves();
+                savedReplayTurns = currentGame->getReplayTurns();
                 currentGame->hide();
                 this->show();
                 });
@@ -60,6 +63,21 @@ QtWidgetsApplication1::QtWidgetsApplication1(QWidget* parent)
 
     QPushButton* replayButton = new QPushButton("리플레이", this);
     layout->addWidget(replayButton);
+    connect(replayButton, &QPushButton::clicked, this, [=]() {
+        if (!savedReplayBoards.isEmpty()) {
+            ReplayWindow* replayWin = new ReplayWindow(savedReplayBoards, savedReplayMoves, savedReplayTurns);
+            // ReplayWindow에서 메인화면 요청 시 연결
+            connect(replayWin, &ReplayWindow::requestReturnToMain, this, [=]() {
+                this->show();  // 메인화면 다시 표시
+                });
+            replayWin->show();
+            this->hide();
+        }
+        else {
+            QMessageBox::information(this, "안내", "리플레이할 게임 데이터가 없습니다.");
+        }
+        });
+
 
     QPushButton* exitButton = new QPushButton("게임 종료", this);
     layout->addWidget(exitButton);

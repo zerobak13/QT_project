@@ -16,6 +16,9 @@ public:
     GameWindow(int boardSize, int obstacleCount, QString firstPlayer, QWidget* parent = nullptr);
 
     ~GameWindow();
+    QVector<QVector<QVector<Stone>>> getReplayBoards() const { return replayBoards; }
+    QVector<QPoint> getReplayMoves() const { return replayMoves; }
+    QVector<Stone> getReplayTurns() const { return replayTurns; }
 
 protected:
     
@@ -27,6 +30,7 @@ signals:
 private:
     int boardSize;
     int obstacleCount;
+    int turnCount = 1;
     QString firstPlayer;
     Stone currentTurn;
     QLabel* turnLabel;
@@ -44,6 +48,10 @@ private:
 
     QVector<QVector<Stone>> board;
     QVector<QPoint> validMoves;
+    QVector<QVector<QVector<Stone>>> replayBoards;  // 보드 상태
+    QVector<QPoint> replayMoves;                    // 착수 위치
+    QVector<Stone> replayTurns;                     // 누가 뒀는지
+
 private slots:
     void handleCellClick(int x, int y);
 };
