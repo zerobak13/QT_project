@@ -90,11 +90,79 @@ void ReplayWindow::nextTurn()
     }
 }
 
+//void ReplayWindow::renderBoard()
+//{
+//    Stone turn = replayTurns[currentTurnIndex];
+//    QString turnStr = (turn == Stone::Black) ? "흑" : "백";
+//    turnLabel->setText("턴" + QString::number(currentTurnIndex + 1) + " : " + turnStr);
+//    int black = 0, white = 0;
+//    for (const auto& row : replayBoards[currentTurnIndex]) {
+//        for (Stone s : row) {
+//            if (s == Stone::Black) ++black;
+//            else if (s == Stone::White) ++white;
+//        }
+//    }
+//    countLabel->setText("흑돌: " + QString::number(black) + "백돌: " + QString::number(white));
+//    boardArea->update();
+//}
 void ReplayWindow::renderBoard()
 {
-    Stone turn = replayTurns[currentTurnIndex];
-    QString turnStr = (turn == Stone::Black) ? "흑" : "백";
-    turnLabel->setText("턴" + QString::number(currentTurnIndex + 1) + " : " + turnStr);
+    // 마지막 턴 여부
+    bool isLastTurn = (currentTurnIndex == replayBoards.size() - 1);
+
+    // 실제 착수된 턴 수 계산
+    int visibleTurnNumber = 1;
+    for (int i = 0; i < currentTurnIndex; ++i) {
+        if (replayMoves[i].x() >= 0 && replayMoves[i].y() >= 0) {
+            visibleTurnNumber++;
+        }
+    }
+    if (isLastTurn && replayMoves[currentTurnIndex].x() < 0) {
+        visibleTurnNumber--;  // 마지막 턴은 턴 수에 포함하지 않음
+    }
+
+    // 가장 최근에 돌을 놓은 사람 찾기
+    Stone placedBy = Stone::None;
+    for (int i = currentTurnIndex; i >= 0; --i) {
+        if (replayMoves[i].x() >= 0 && replayMoves[i].y() >= 0) {
+            placedBy = replayTurns[i];
+            break;
+        }
+    }
+
+    // 턴 설명 텍스트 결정
+    QString turnStr;
+    if (isLastTurn) {
+        // 마지막 턴일 때 돌 수 비교해서 결과 표시
+        int black = 0, white = 0;
+        for (const auto& row : replayBoards[currentTurnIndex]) {
+            for (Stone s : row) {
+                if (s == Stone::Black) ++black;
+                else if (s == Stone::White) ++white;
+            }
+        }
+
+        if (black > white) {
+            turnStr = "게임 종료 - 흑 승!";
+        }
+        else if (white > black) {
+            turnStr = "게임 종료 - 백 승!";
+        }
+        else {
+            turnStr = "게임 종료 - 무승부";
+        }
+    }
+    else if (replayMoves[currentTurnIndex].x() < 0) {
+        turnStr = "패스";
+    }
+    else {
+        turnStr = (placedBy == Stone::Black) ? "백 턴" : "흑 턴";
+    }
+
+    // 라벨 표시
+    turnLabel->setText("턴 " + QString::number(visibleTurnNumber) + " : " + turnStr);
+
+    // 돌 개수 카운트
     int black = 0, white = 0;
     for (const auto& row : replayBoards[currentTurnIndex]) {
         for (Stone s : row) {
@@ -102,7 +170,8 @@ void ReplayWindow::renderBoard()
             else if (s == Stone::White) ++white;
         }
     }
-    countLabel->setText("흑돌: " + QString::number(black) + "백돌: " + QString::number(white));
+    countLabel->setText("흑돌: " + QString::number(black) + "  백돌: " + QString::number(white));
+
     boardArea->update();
 }
 
@@ -145,11 +214,12 @@ bool ReplayWindow::eventFilter(QObject* obj, QEvent* event)
 
         // 착수 위치 강조
         QPoint move = replayMoves[currentTurnIndex];
-        QRect highlight(move.x() * cellSize + 2, move.y() * cellSize + 2, cellSize - 4, cellSize - 4);
-        painter.setBrush(Qt::NoBrush);
-        painter.setPen(QPen(Qt::red, 3));
-        painter.drawRect(highlight);
-
+        if (move.x() >= 0 && move.y() >= 0) {
+            QRect highlight(move.x() * cellSize + 2, move.y() * cellSize + 2, cellSize - 4, cellSize - 4);
+            painter.setBrush(Qt::NoBrush);
+            painter.setPen(QPen(Qt::red, 3));
+            painter.drawRect(highlight);
+        }
         return true;
     }
 

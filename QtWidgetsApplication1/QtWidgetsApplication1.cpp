@@ -36,9 +36,11 @@ QtWidgetsApplication1::QtWidgetsApplication1(QWidget* parent)
 
            
             connect(currentGame, &GameWindow::requestReturnToMain, this, [=]() {
-                savedReplayBoards = currentGame->getReplayBoards();
-                savedReplayMoves = currentGame->getReplayMoves();
-                savedReplayTurns = currentGame->getReplayTurns();
+                if (currentGame->isGameOverFlag) {
+                    savedReplayBoards = currentGame->getReplayBoards();
+                    savedReplayMoves = currentGame->getReplayMoves();
+                    savedReplayTurns = currentGame->getReplayTurns();
+                }
                 currentGame->hide();
                 this->show();
                 });

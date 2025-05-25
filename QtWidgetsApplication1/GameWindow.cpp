@@ -247,9 +247,14 @@ void GameWindow::handleCellClick(int x, int y)
     board[y][x] = currentTurn;
     flipStones(x, y, currentTurn);
 
+    replayBoards.append(board);
+    replayMoves.append(QPoint(x, y));
+    replayTurns.append(currentTurn == Stone::Black ? Stone::White : Stone::Black);
+
     // 턴 변경
     currentTurn = (currentTurn == Stone::Black) ? Stone::White : Stone::Black;
     turnCount++;
+
     // 착수 위치 갱신
     updateValidMoves(currentTurn);
     updateStatus();
@@ -279,10 +284,17 @@ void GameWindow::handleCellClick(int x, int y)
         );
         msgBox.exec();
 
+      
+        // 리플레이 기록 (착수하지 않고 패스만 됨)
+        replayBoards.append(board);
+        replayMoves.append(QPoint(-1, -1));  // -1, -1: 착수 안함
+        replayTurns.append(currentTurn);
+
         // 턴 넘기기
         currentTurn = other;
         updateValidMoves(currentTurn);
         updateStatus();
+      
 
         // 다시 종료 조건 확인
         checkGameEndAndNotify();
@@ -290,10 +302,9 @@ void GameWindow::handleCellClick(int x, int y)
     }
 
     // ✅ 게임 종료 조건 확인
+    
+  
     checkGameEndAndNotify();
-    replayBoards.append(board);
-    replayMoves.append(QPoint(x, y));
-    replayTurns.append(currentTurn == Stone::Black ? Stone::White : Stone::Black);
 }
 
 
@@ -356,6 +367,10 @@ void GameWindow::checkGameEndAndNotify()
 {
     if (!isGameOver())
         return;
+    // 게임 종료 직전 상태 기록 (최종 턴)
+    replayBoards.append(board);
+    replayMoves.append(QPoint(-1, -1));  // 착수 안함
+    replayTurns.append(currentTurn);    // 마지막 턴 주인
 
     int black = 0, white = 0;
     for (const auto& row : board) {
@@ -369,7 +384,7 @@ void GameWindow::checkGameEndAndNotify()
     if (black > white) result = "흑 승!";
     else if (white > black) result = "백 승!";
     else result = "무승부!";
-
+    isGameOverFlag = true;
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("게임 종료");
     msgBox.setText(result);

@@ -19,7 +19,7 @@ public:
     QVector<QVector<QVector<Stone>>> getReplayBoards() const { return replayBoards; }
     QVector<QPoint> getReplayMoves() const { return replayMoves; }
     QVector<Stone> getReplayTurns() const { return replayTurns; }
-
+    bool isGameOverFlag = false;
 protected:
     
     void updateValidMoves(Stone currentTurn);  
