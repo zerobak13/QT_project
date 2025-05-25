@@ -373,25 +373,38 @@ void GameWindow::checkGameEndAndNotify()
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("게임 종료");
     msgBox.setText(result);
+    msgBox.setStyleSheet(
+        "QLabel { color: black; } "
+        "QPushButton { color: black; } "
+        "QMessageBox { background-color: white; }"
+    );
     msgBox.exec();
 
 
-    QMessageBox::StandardButton reply =
-        QMessageBox::question(this, "리플레이 저장", "리플레이를 저장하시겠습니까?",
-            QMessageBox::Yes | QMessageBox::No);
+   
+        QMessageBox saveBox(this);
+    saveBox.setWindowTitle("리플레이 저장");
+    saveBox.setText("리플레이를 저장하시겠습니까?");
+    saveBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    saveBox.setStyleSheet(
+        "QLabel { color: black; } "
+        "QPushButton { color: black; } "
+        "QMessageBox { background-color: white; }"
+    );
+    QMessageBox::StandardButton reply = (QMessageBox::StandardButton)saveBox.exec();
 
     if (reply == QMessageBox::Yes) {
         // 나중에 ReplayWindow에서 쓸 수 있도록 상위로 전달할 예정
         // 예: emit replaySaved(replayBoards, replayMoves, replayTurns);
         // 지금은 일단 저장했다는 사실만 알려주기
-        qDebug() << "✅ 리플레이 저장 선택됨";
+        qDebug() << " 리플레이 저장 선택됨";
     }
     else {
         // 저장 안 함
         replayBoards.clear();
         replayMoves.clear();
         replayTurns.clear();
-        qDebug() << "⛔ 리플레이 저장하지 않음";
+        qDebug() << " 리플레이 저장하지 않음";
     }
 
 

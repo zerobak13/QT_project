@@ -16,7 +16,7 @@ QtWidgetsApplication1::QtWidgetsApplication1(QWidget* parent)
 
     QVBoxLayout* layout = new QVBoxLayout();
 
-    QLabel* label = new QLabel("202312345 홍길동", this);
+    QLabel* label = new QLabel("2020202065 박제영", this);
     layout->addWidget(label);
 
     QPushButton* newGameButton = new QPushButton("새 게임", this);
